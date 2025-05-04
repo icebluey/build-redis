@@ -291,7 +291,7 @@ _build_redis() {
     export BUILD_WITH_MODULES=yes
     export INSTALL_RUST_TOOLCHAIN=yes
     export DISABLE_WERRORS=yes
-    make PREFIX=/usr all
+    make -j$(nproc --all) PREFIX=/usr all
     mkdir -p /tmp/redis/usr/lib64/redis/modules
     mkdir -p /tmp/redis/usr/include
     mkdir -p /tmp/redis/etc/redis
