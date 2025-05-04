@@ -38,11 +38,11 @@ jobs:
       #    sudo /bin/systemctl stop docker.socket docker.service containerd.service
       #    sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
 
-      - name: Build redis 8.0 ky10
-        run: |
-          sudo /bin/bash run-build-ky10.sh
-          sudo /bin/systemctl stop docker.socket docker.service containerd.service
-          sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+      #- name: Build redis 8.0 ky10
+      #  run: |
+      #    sudo /bin/bash run-build-ky10.sh
+      #    sudo /bin/systemctl stop docker.socket docker.service containerd.service
+      #    sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
 
       - name: Generate release tag env
         run: |
