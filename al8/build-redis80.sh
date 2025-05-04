@@ -292,6 +292,8 @@ _build_redis() {
 
 rm -fr /usr/lib64/redis
 
+. /opt/rh/gcc-toolset-13/enable
+
 _build_zlib
 _build_brotli
 _build_zstd
