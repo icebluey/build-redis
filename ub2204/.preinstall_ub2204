@@ -1,0 +1,76 @@
+###################################################
+
+# ubuntu 22.04
+
+###################################################
+
+apt update -y -qqq
+apt install -y bash wget ca-certificates curl git
+apt upgrade -y bash wget ca-certificates curl git
+ln -svf bash /bin/sh
+
+ln -svf ../usr/share/zoneinfo/UTC /etc/localtime
+DEBIAN_FRONTEND=noninteractive apt install -y tzdata
+dpkg-reconfigure --frontend noninteractive tzdata
+
+apt install -y binutils coreutils util-linux findutils diffutils patch sed gawk grep file tar gzip bzip2 xz-utils
+apt install -y libc-bin passwd pkg-config groff-base
+apt install -y zlib1g-dev libzstd-dev liblzma-dev libbz2-dev tar gzip bzip2 xz-utils
+apt install -y libssl-dev openssl procps iproute2 net-tools iputils-ping vim bind9-dnsutils libxml2-utils
+apt install -y daemon procps psmisc net-tools
+apt install -y lsof strace sysstat tcpdump
+apt install -y make gcc g++ perl libperl-dev groff-base dpkg-dev cmake m4 gperf
+apt install -y lsb-release
+# build from src
+apt install -y autoconf autoconf-archive autogen automake autopoint autotools-dev libtool m4 bison flex
+# build openssl 1.1.1
+apt install -y libsctp-dev
+apt install -y libclang-15-dev
+
+# build nginx
+apt install -y bc uuid-dev libgd-dev libxslt1-dev libxml2-dev libpcre2-dev libpcre3-dev libpng-dev libjpeg-dev
+# build pinentry (gnupg)
+apt install -y libncurses-dev libreadline-dev libldap2-dev libsqlite3-dev libusb-1.0-0-dev libsecret-1-dev
+# build openssh
+apt install -y libedit-dev libssh2-1-dev libpam0g-dev libsystemd-dev groff-base
+# build haproxy
+apt install -y libsystemd-dev libcrypt-dev
+
+# run keepalived
+apt install -y libnl-3-200 libnl-genl-3-200 libsnmp-dev libnftnl11 libsystemd0
+apt install -y libnftables-dev nftables
+apt install -y libipset-dev ipset
+apt install -y iptables
+apt install -y libsnmp-dev libmnl-dev libnftnl-dev libnl-3-dev libnl-genl-3-dev libnfnetlink-dev
+
+# build nettle for gnutls
+apt install -y libgmp-dev
+# build gnutls for chrony
+apt install -y libp11-kit-dev libidn2-dev
+# build chrony
+apt install -y libseccomp-dev libcap-dev
+# build libfido2
+apt install -y libcbor-dev libpcsclite-dev
+
+# run cloudflare-warp
+apt install -y desktop-file-utils gnupg2 libnspr4 libnss3 libnss3-tools gnupg gpg
+
+apt install -y daemon procps psmisc net-tools patchelf chrpath libtasn1-6-dev gettext
+apt install -y libnftables-dev nftables || : 
+apt install -y libipset-dev ipset || : 
+apt install -y iptables || : 
+apt install -y libsnmp-dev libmnl-dev libnftnl-dev libnl-3-dev libnl-genl-3-dev libnfnetlink-dev || : 
+
+# Required packages to build cryptsetup:
+apt install -y libdevmapper-dev libjson-c-dev libpopt-dev libssh-dev libuuid1 libblkid1 libargon2-dev libpwquality-dev libcrack2 liblvm2-dev lvm2 asciidoctor
+
+# to build brotli
+apt install -y cmake
+# to build nginx
+apt install -y libc6-dev libxml2-dev libxslt1-dev libperl-dev perl libgd-dev bc
+
+apt upgrade -y
+/sbin/ldconfig
+[[ -e /etc/ssl/cert.pem ]] || ln -svf certs/ca-certificates.crt /etc/ssl/cert.pem
+
+exit

@@ -1,0 +1,61 @@
+name: build redis 8.0
+on:
+  #push:
+  #  branches: [ "master" ]
+  #pull_request:
+  #  branches: [ "master" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install docker
+        run: |
+          sudo apt update -y -qqq
+          sudo apt autoremove --purge -y needrestart || true
+          sudo apt install -y bash wget
+          sudo ln -svf bash /bin/sh
+          sudo /bin/bash scripts/clean-os.sh
+          sudo /bin/rm -fr /tmp/*
+          sudo /bin/bash scripts/install-docker.sh
+
+      - name: Build redis 8.0 al9
+        run: |
+          sudo /bin/bash run-build-al9.sh
+          sudo /bin/systemctl stop docker.socket docker.service containerd.service
+          sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+
+      - name: Build redis 8.0 al8
+        run: |
+          sudo /bin/bash run-build-al8.sh
+          sudo /bin/systemctl stop docker.socket docker.service containerd.service
+          sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+
+      #- name: Build redis 8.0 ub2204
+      #  run: |
+      #    sudo /bin/bash run-build-ub2204.sh
+      #    sudo /bin/systemctl stop docker.socket docker.service containerd.service
+      #    sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+
+      - name: Build redis 8.0 ky10
+        run: |
+          sudo /bin/bash run-build-ky10.sh
+          sudo /bin/systemctl stop docker.socket docker.service containerd.service
+          sudo /bin/rm -fr /var/lib/docker/* /var/lib/containerd/* /mnt/docker-data/*
+
+      - name: Generate release tag env
+        run: |
+          _release_ver="$(date -u +%Y-%m-%d-%H%M)"
+          echo "_release_ver=${_release_ver}" >> $GITHUB_ENV
+
+      - name: Upload files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env._release_ver }}
+          files: /tmp/_output_assets/_output/*
+
+      - name: Delete old release tag env
+        run: |
+          sed -e "/^_release_ver=/d" -i $GITHUB_ENV
+
