@@ -91,6 +91,20 @@ patch --verbose -d /usr/lib/dracut/modules.d/00systemd -N -p1 -i /tmp/remove_sys
 sleep 1
 rm -f /tmp/remove_sysctl_modules-load.d_from_initramfs.patch
 
+yum install -y gcc-toolset-13-gcc gcc-toolset-13-gcc-c++
+
+_tmp_dir="$(mktemp -d)"
+cd "${_tmp_dir}"
+wget -c -t 9 -T 9 'https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64'
+sleep 1
+mv jq-linux-amd64 jq
+rm -f /usr/bin/jq
+rm -f /usr/local/bin/jq
+install -v -c -m 0755 jq /usr/bin/jq
+sleep 1
+cd /tmp
+rm -fr "${_tmp_dir}"
+
 /sbin/ldconfig >/dev/null 2>&1
 
 echo
