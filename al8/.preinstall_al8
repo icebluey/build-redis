@@ -93,8 +93,11 @@ patch --verbose -d /usr/lib/dracut/modules.d/00systemd -N -p1 -i /tmp/remove_sys
 sleep 1
 rm -f /tmp/remove_sysctl_modules-load.d_from_initramfs.patch
 
-yum install -y gcc-toolset-13-gcc gcc-toolset-13-gcc-c++
-yum install -y python3.11 python3.11-pip python3.11-devel
+#yum install -y gcc-toolset-13-gcc gcc-toolset-13-gcc-c++
+yum install -y gcc-toolset-14-gcc gcc-toolset-14-gcc-c++
+#yum install -y python3.11 python3.11-pip python3.11-devel
+yum install -y python3.12 python3.12-pip python3.12-devel
+
 _tmp_dir="$(mktemp -d)"
 cd "${_tmp_dir}"
 wget -c -t 9 -T 9 'https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64'
