@@ -293,8 +293,12 @@ _build_redis() {
 rm -fr /usr/lib64/redis
 
 python3.11 -m venv /opt/venv
-
+sleep 1
+. /opt/venv/bin/activate
+sleep 1
 . /opt/rh/gcc-toolset-13/enable
+echo
+python -V
 echo
 gcc -v
 echo
