@@ -340,7 +340,6 @@ _build_zlib
 _build_brotli
 _build_zstd
 _build_openssl35
-_build_cmake4
 _build_redis
 
 rm -fr /tmp/_output
