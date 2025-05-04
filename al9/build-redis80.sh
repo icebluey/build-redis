@@ -271,8 +271,7 @@ _build_redis() {
     cd /tmp/redis
     find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs --no-run-if-empty -I '{}' /usr/bin/strip '{}'
     find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, .*stripped.*/\1/p' | \
-      xargs --no-run-if-empty -I '{}' patchelf --add-rpath '$ORIGIN/../lib64/redis/private' '{}' || \
-      xargs --no-run-if-empty -I '{}' patchelf --set-rpath '$ORIGIN/../lib64/redis/private' '{}'
+      xargs --no-run-if-empty -I '{}' patchelf --add-rpath '$ORIGIN/../lib64/redis/private' '{}'
 
     #install -v -m 0755 -d /var/lib/redis
     #install -v -m 0755 -d /var/log/redis
