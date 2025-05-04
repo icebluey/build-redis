@@ -66,6 +66,8 @@ yum install -y libpfm-devel libpfm
 yum install -y libtraceevent-devel libtraceevent
 yum install -y libbpf-devel libbabeltrace-devel
 
+yum install -y cmake clang llvm
+
 # to build brotli
 yum install -y cmake
 # to build nginx
