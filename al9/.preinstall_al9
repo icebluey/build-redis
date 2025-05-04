@@ -75,6 +75,20 @@ yum install -y glibc-devel libxml2-devel libxslt-devel perl-devel perl gd-devel 
 
 yum install -y dracut ; yum update -y dracut
 
+yum install -y gcc-toolset-13-gcc gcc-toolset-13-gcc-c++
+yum install -y python3.11 python3.11-pip python3.11-devel
+_tmp_dir="$(mktemp -d)"
+cd "${_tmp_dir}"
+wget -c -t 9 -T 9 'https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64'
+sleep 1
+mv jq-linux-amd64 jq
+rm -f /usr/bin/jq
+rm -f /usr/local/bin/jq
+install -v -c -m 0755 jq /usr/bin/jq
+sleep 1
+cd /tmp
+rm -fr "${_tmp_dir}"
+
 /sbin/ldconfig >/dev/null 2>&1
 echo
 echo ' preinstall 9 done'
