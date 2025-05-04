@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+TZ='UTC'; export TZ
+
+cd "$(dirname "$0")"
+
+set -e
+
+if ! grep -q '^alias ll=' ~/.bashrc; then echo "alias ll='/bin/ls --color -lah'" >> ~/.bashrc; . ~/.bashrc; fi
+
+dnf makecache
+dnf upgrade -y
+
+yum install -y brotli-devel
+yum install -y zstd-devel
+
+yum install -y openssl-libs
+yum install -y openssl
+yum install -y openssl-devel
+yum install -y lksctp-tools-devel lksctp-tools
+
+yum install -y gcc cpp gcc-c++ libstdc++-devel make m4 libtool pkgconfig groff-base \
+  glibc-devel glib2-devel systemd-devel libuuid-devel ncurses-devel ncurses \
+  elfutils-libelf-devel elfutils-devel elfutils kmod libselinux-devel libcom_err-devel \
+  libverto-devel keyutils-libs-devel krb5-devel libkadm5 libsepol-devel \
+  rpm-build rpmdevtools cpio wget ca-certificates curl \
+  xz xz-devel bzip2 bzip2-devel gzip zlib-devel tar unzip zip \
+  binutils util-linux findutils diffutils shadow-utils passwd \
+  socat ethtool iptables ebtables ipvsadm ipset psmisc \
+  bash-completion conntrack-tools iproute nfs-utils net-tools \
+  authconfig libpwquality pam-devel pam audit which file sed gawk grep less \
+  patch crontabs cronie info man-db lsof lshw dmidecode pciutils-libs pciutils \
+  createrepo_c
+
+yum install -y perl perl-devel perl-libs perl-Env perl-ExtUtils-Embed perl-IPC-Cmd \
+  perl-ExtUtils-Install perl-ExtUtils-MakeMaker perl-ExtUtils-Manifest \
+  perl-ExtUtils-ParseXS perl-Git perl-JSON perl-libwww-perl perl-podlators
+
+yum install -y glibc-devel glibc-headers libxml2-devel libxslt-devel gd-devel \
+  perl-devel perl bc net-snmp-libs net-snmp-agent-libs net-snmp-devel libnl3-devel libnl3
+
+yum install -y asciidoc audit-libs-devel bash bc binutils binutils-devel bison bpftool bzip2 \
+  diffutils elfutils-devel findutils flex gawk gcc gcc-c++ gcc-plugin-devel gettext git git-core \
+  glibc-static gzip hmaccalc hostname java-devel kernel-rpm-macros kmod libbabeltrace-devel libbpf-devel \
+  libcap-devel libcap-ng-devel libnl3-devel m4 make ncurses-devel net-tools newt-devel \
+  nss-tools numactl-devel openssl openssl-devel patch pciutils-devel perl-Carp perl-ExtUtils-Embed perl-devel \
+  perl-generators perl-interpreter pesign python3-devel python3-docutils python3-sphinx python3-sphinx_rtd_theme \
+  rsync tar which xmlto xz xz-devel zlib-devel
+
+yum install -y sh-utils
+yum install -y libmnl-devel libmnl
+yum install -y libnftnl-devel libnftnl
+yum install -y libnfnetlink-devel libnfnetlink
+yum install -y file-devel file
+yum install -y nftables-devel nftables
+yum install -y iptables-devel iptables
+yum install -y ipset-devel ipset
+yum install -y rsyslog logrotate
+yum install -y chrpath
+yum install -y patch
+yum install -y glibc-all-langpacks
+
+# For building kernel
+yum install -y libpfm-devel libpfm
+yum install -y libbpf-devel libbabeltrace-devel
+
+# to build brotli
+yum install -y cmake
+# to build nginx
+yum install -y glibc-devel libxml2-devel libxslt-devel perl-devel perl gd-devel bc
+
+yum install -y dracut ; yum update -y dracut
+
+
+/sbin/ldconfig >/dev/null 2>&1
+
+systemctl mask tmp.mount 
+
+dnf localinstall -y patchelf-0.12-1.el8.x86_64.rpm
+
+echo
+echo ' preinstall done'
+echo
+exit

@@ -237,7 +237,7 @@ _build_redis() {
     set -e
     _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
-    _redis_ver="$(wget -qO- 'https://download.redis.io/releases/' | grep -ivE 'alpha|beta|rc' | grep -i 'redis-8\.0' | sed 's|"|\n|g' | grep -i '^redis-8\.0' | sed -e 's|.*redis-||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n1)"
+    _redis_ver="$(wget -qO- 'https://download.redis.io/releases/' | grep -ivE 'alpha|beta|rc' | grep -i 'redis-7\.4' | sed 's|"|\n|g' | grep -i '^redis-7\.4' | sed -e 's|.*redis-||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n1)"
     wget -c -t 9 -T 9 "https://download.redis.io/releases/redis-${_redis_ver}.tar.gz"
     tar -xof redis*.tar*
     sleep 1
@@ -248,23 +248,18 @@ _build_redis() {
     sed -i -e 's|^logfile .*$|logfile /var/log/redis/redis.log|g' redis.conf
     sed -i -e 's|^logfile .*$|logfile /var/log/redis/sentinel.log|g' sentinel.conf
     sed -i -e 's|^dir .*$|dir /var/lib/redis|g' redis.conf
-    sed 's|^include redis.conf|include /etc/redis/redis.conf|g' -i redis-full.conf
-    sed -e '/loadmodule /s/\/modules\/[^\/]*\//\/usr\/lib64\/redis\/modules\//g' -e '/loadmodule /s|\./|/|g' -i redis-full.conf
-    sed '/^INSTALL_DIR /s|/lib/redis/|/lib64/redis/|g' -i modules/common.mk
     #sed -e 's/--with-lg-quantum/--with-lg-page=12 --with-lg-quantum/' -i deps/Makefile
     #sed -n -e 's/#define REDISMODULE_APIVER_[0-9][0-9]* //p' src/redismodule.h
-    #make PREFIX=/usr BUILD_WITH_SYSTEMD=yes BUILD_TLS=yes all
     export BUILD_TLS=yes
     export BUILD_WITH_MODULES=yes
     export INSTALL_RUST_TOOLCHAIN=yes
     export DISABLE_WERRORS=yes
     make -j$(nproc --all) PREFIX=/usr all
-    mkdir -p /tmp/redis/usr/lib64/redis/modules
+    mkdir -p /tmp/redis/usr/lib64/redis
     mkdir -p /tmp/redis/usr/include
     mkdir -p /tmp/redis/etc/redis
     make V=1 PREFIX=/tmp/redis/usr install
     install -v -c -m 0644 redis.conf /tmp/redis/etc/redis/
-    install -v -c -m 0644 redis-full.conf /tmp/redis/etc/redis/
     install -v -c -m 0644 sentinel.conf /tmp/redis/etc/redis/
     install -v -c -m 0644 src/redismodule.h /tmp/redis/usr/include/
     cp -afr /usr/lib64/redis/private /tmp/redis/usr/lib64/redis/
