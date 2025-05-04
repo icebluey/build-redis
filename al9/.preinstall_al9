@@ -75,7 +75,7 @@ yum install -y glibc-devel libxml2-devel libxslt-devel perl-devel perl gd-devel 
 
 yum install -y dracut ; yum update -y dracut
 
-yum install -y gcc-toolset-14-gcc gcc-toolset-14-gcc-c++
+yum install -y gcc-toolset-13-gcc gcc-toolset-13-gcc-c++
 yum install -y python3.12 python3.12-pip python3.12-devel
 
 _tmp_dir="$(mktemp -d)"
