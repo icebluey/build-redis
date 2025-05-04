@@ -232,6 +232,39 @@ _build_openssl35() {
     /sbin/ldconfig
 }
 
+_build_cmake4() {
+    /sbin/ldconfig
+    set -e
+    _tmp_dir="$(mktemp -d)"
+    cd "${_tmp_dir}"
+    _cmake_ver="$(wget -qO- 'https://github.com/Kitware/CMake/releases' | grep -i 'cmake-.*.tar\.' | sed 's|"|\n|g' | grep -i '^/Kitware/CMake/releases/download' | sed 's|.*/cmake-||g' | sed 's|\.tar.*||g' | grep -ivE 'alpha|beta|rc' | cut -d- -f1 | sort -V | uniq | tail -n 1)"
+    wget -c -t 9 -T 9 "https://github.com/Kitware/CMake/releases/download/v${_cmake_ver}/cmake-${_cmake_ver}.tar.gz"
+    sleep 1
+    tar -xof cmake-*.tar.*
+    sleep 1
+    rm -f cmake-*.tar*
+    cd cmake-*
+    ./bootstrap --parallel=$(nproc --all) --prefix=/usr --datadir=share/cmake --docdir=share/doc/cmake \
+    --system-zlib --no-system-curl --no-qt-gui -- \
+    -G 'Unix Makefiles' \
+    -DCMAKE_BUILD_TYPE='Release' \
+    -DCMAKE_CXX_FLAGS:STRING='-static-libgcc -static-libstdc++ -lz -ldl -pthread' \
+    -DCMAKE_EXE_LINKER_FLAGS:STRING='-static-libgcc -static-libstdc++' \
+    -DCMAKE_USE_OPENSSL=ON
+    sleep 1
+    make -j$(nproc --all) all
+    sleep 1
+    rm -fr /tmp/cmake
+    make install DESTDIR=/tmp/cmake
+    cd /tmp/cmake
+    _strip_files
+    sleep 2
+    /bin/cp -afr * /
+    sleep 2
+    cd /tmp
+    rm -fr "${_tmp_dir}" 
+}
+
 _build_redis() {
     /sbin/ldconfig
     set -e
@@ -307,6 +340,7 @@ _build_zlib
 _build_brotli
 _build_zstd
 _build_openssl35
+_build_cmake4
 _build_redis
 
 rm -fr /tmp/_output
