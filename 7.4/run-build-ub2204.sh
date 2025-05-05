@@ -21,7 +21,7 @@ docker exec ub2204 /bin/ln -svf bash /bin/sh
 docker exec ub2204 /bin/bash -c '/bin/rm -fr /tmp/*'
 docker cp ub2204 ub2204:/home/
 docker exec ub2204 /bin/bash /home/ub2204/.preinstall_ub2204
-docker exec ub2204 /bin/bash /home/ub2204/build-redis80.sh
+docker exec ub2204 /bin/bash /home/ub2204/build-redis74.sh
 mkdir -p /tmp/_output_assets
 docker cp ub2204:/tmp/_output /tmp/_output_assets/
 exit

@@ -25,7 +25,7 @@ docker exec al8 /bin/bash -c 'rm -fr /tmp/*'
 docker cp al8 al8:/home/
 #docker exec al8 /bin/bash /home/al8/install-kernel.sh
 docker exec al8 /bin/bash /home/al8/.preinstall_al8
-docker exec al8 /bin/bash /home/al8/build-redis80.sh
+docker exec al8 /bin/bash /home/al8/build-redis74.sh
 mkdir -p /tmp/_output_assets
 docker cp al8:/tmp/_output /tmp/_output_assets/
 exit

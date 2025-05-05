@@ -248,7 +248,7 @@ _build_redis() {
     sed -i -e 's|^logfile .*$|logfile /var/log/redis/redis.log|g' redis.conf
     sed -i -e 's|^logfile .*$|logfile /var/log/redis/sentinel.log|g' sentinel.conf
     sed -i -e 's|^dir .*$|dir /var/lib/redis|g' redis.conf
-    #sed -e 's/--with-lg-quantum/--with-lg-page=12 --with-lg-quantum/' -i deps/Makefile
+    sed -e 's/--with-lg-quantum/--with-lg-page=12 --with-lg-quantum/' -i deps/Makefile
     #sed -n -e 's/#define REDISMODULE_APIVER_[0-9][0-9]* //p' src/redismodule.h
     export BUILD_TLS=yes
     export BUILD_WITH_MODULES=yes

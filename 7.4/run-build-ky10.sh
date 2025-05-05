@@ -22,7 +22,7 @@ docker exec ky10 /bin/bash -c 'ln -svf bash /bin/sh'
 docker exec ky10 /bin/bash -c 'rm -fr /tmp/*'
 docker cp ky10 ky10:/home/
 docker exec ky10 /bin/bash /home/ky10/.preinstall_ky10
-docker exec ky10 /bin/bash /home/ky10/build-redis80.sh
+docker exec ky10 /bin/bash /home/ky10/build-redis74.sh
 mkdir -p /tmp/_output_assets
 docker cp ky10:/tmp/_output /tmp/_output_assets/
 exit

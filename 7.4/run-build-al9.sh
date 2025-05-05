@@ -25,7 +25,7 @@ docker exec al9 /bin/bash -c 'rm -fr /tmp/*'
 docker cp al9 al9:/home/
 #docker exec al9 /bin/bash /home/al9/install-kernel.sh
 docker exec al9 /bin/bash /home/al9/.preinstall_al9
-docker exec al9 /bin/bash /home/al9/build-redis80.sh
+docker exec al9 /bin/bash /home/al9/build-redis74.sh
 mkdir -p /tmp/_output_assets
 docker cp al9:/tmp/_output /tmp/_output_assets/
 exit

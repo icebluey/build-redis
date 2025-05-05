@@ -251,7 +251,7 @@ _build_redis() {
     sed 's|^include redis.conf|include /etc/redis/redis.conf|g' -i redis-full.conf
     sed -e '/loadmodule /s/\/modules\/[^\/]*\//\/usr\/lib64\/redis\/modules\//g' -e '/loadmodule /s|\./|/|g' -i redis-full.conf
     sed '/^INSTALL_DIR /s|/lib/redis/|/lib64/redis/|g' -i modules/common.mk
-    #sed -e 's/--with-lg-quantum/--with-lg-page=12 --with-lg-quantum/' -i deps/Makefile
+    sed -e 's/--with-lg-quantum/--with-lg-page=12 --with-lg-quantum/' -i deps/Makefile
     #sed -n -e 's/#define REDISMODULE_APIVER_[0-9][0-9]* //p' src/redismodule.h
     export BUILD_TLS=yes
     export BUILD_WITH_MODULES=yes
