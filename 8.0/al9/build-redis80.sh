@@ -161,7 +161,6 @@ _build_zstd() {
     sed '/^prefix/s|= .*|= /usr|g' -i programs/Makefile
     #sed '/^libdir/s|= .*|= /usr/lib64|g' -i programs/Makefile
     LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,-rpath,\$$OOORIGIN'; export LDFLAGS
-    #make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64
     make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C lib lib-mt
     LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"; export LDFLAGS
     make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C programs
@@ -252,7 +251,6 @@ _build_redis() {
     sed -e '/loadmodule /s/\/modules\/[^\/]*\//\/usr\/lib64\/redis\/modules\//g' -e '/loadmodule /s|\./|/|g' -i redis-full.conf
     sed '/^INSTALL_DIR /s|/lib/redis/|/lib64/redis/|g' -i modules/common.mk
     sed -e 's/--with-lg-quantum/--with-lg-page=12 --with-lg-quantum/' -i deps/Makefile
-    #sed -n -e 's/#define REDISMODULE_APIVER_[0-9][0-9]* //p' src/redismodule.h
     export BUILD_TLS=yes
     export BUILD_WITH_MODULES=yes
     export INSTALL_RUST_TOOLCHAIN=yes
