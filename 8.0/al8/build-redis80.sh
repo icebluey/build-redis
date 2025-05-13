@@ -59,6 +59,36 @@ _strip_files() {
     echo
 }
 
+_install_rust() {
+    set -e
+    _tmp_dir="$(mktemp -d)"
+    cd "${_tmp_dir}"
+    _rust_ver="$(wget -qO- 'https://forge.rust-lang.org/infra/other-installation-methods.html#standalone' | grep -i '\.tar\.xz' | sed 's/"/\n/g' | grep -i 'https://.*xz$' | grep -ivE 'beta|nightly|src' | grep -i 'x86_64-unknown-linux-gnu' | sort -V | uniq | tail -n 1 | sed -e 's|.*rust-||g' -e 's|-x86.*||g')"
+    wget -c -t 0 -T 9 "https://static.rust-lang.org/dist/rust-${_rust_ver}-x86_64-unknown-linux-gnu.tar.xz"
+    tar -xof *.tar*
+    sleep 1
+    rm -fr *.tar*
+    cd rust-*
+    rm -fr /usr/local/rust
+    install -m 0755 -d /usr/local/rust
+    /bin/cp -afr rust-analysis-x86_64-unknown-linux-gnu/lib /usr/local/rust/
+    /bin/cp -afr rust-std-x86_64-unknown-linux-gnu/lib /usr/local/rust/
+    /bin/cp -afr llvm-tools-preview/lib /usr/local/rust/
+    /bin/cp -afr rustc/lib /usr/local/rust/
+    [ -d rust-demangler-preview/bin ] && /bin/cp -afr rust-demangler-preview/bin /usr/local/rust/
+    /bin/cp -afr rls-preview/bin /usr/local/rust/
+    /bin/cp -afr clippy-preview/bin /usr/local/rust/
+    /bin/cp -afr rustc/bin /usr/local/rust/
+    /bin/cp -afr cargo/bin /usr/local/rust/
+    /bin/cp -afr rust-analyzer-preview/bin /usr/local/rust/
+    /bin/cp -afr rustfmt-preview/bin /usr/local/rust/
+    /bin/cp -afr rustc/libexec /usr/local/rust/
+    /bin/cp -afr cargo/etc /usr/local/rust/
+    sleep 1
+    cd /tmp
+    rm -fr "${_tmp_dir}"
+}
+
 _build_zlib() {
     /sbin/ldconfig
     set -e
@@ -242,6 +272,14 @@ _build_redis() {
     sleep 1
     rm -f redis*.tar*
     cd redis-*
+    # rust
+    export RUST_HOME="/usr/local/rust"
+    export PATH=$RUST_HOME/bin:$PATH
+    export LD_LIBRARY_PATH=$RUST_HOME/lib:$LD_LIBRARY_PATH
+    export CARGO_HOME='.cargo'
+    echo
+    cargo --version
+    echo
     LDFLAGS=''
     LDFLAGS="${_ORIG_LDFLAGS}"; export LDFLAGS
     sed -i -e 's|^logfile .*$|logfile /var/log/redis/redis.log|g' redis.conf
@@ -303,6 +341,8 @@ _build_zlib
 _build_brotli
 _build_zstd
 _build_openssl35
+
+_install_rust
 _build_redis
 
 rm -fr /tmp/_output
