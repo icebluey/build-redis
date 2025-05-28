@@ -70,23 +70,19 @@ _install_rust() {
     rm -fr *.tar*
     cd rust-*
     rm -fr /usr/local/rust
-    install -m 0755 -d /usr/local/rust
-    /bin/cp -afr rust-analysis-x86_64-unknown-linux-gnu/lib /usr/local/rust/
-    /bin/cp -afr rust-std-x86_64-unknown-linux-gnu/lib /usr/local/rust/
-    /bin/cp -afr llvm-tools-preview/lib /usr/local/rust/
-    /bin/cp -afr rustc/lib /usr/local/rust/
-    [ -d rust-demangler-preview/bin ] && /bin/cp -afr rust-demangler-preview/bin /usr/local/rust/
-    /bin/cp -afr rls-preview/bin /usr/local/rust/
-    /bin/cp -afr clippy-preview/bin /usr/local/rust/
-    /bin/cp -afr rustc/bin /usr/local/rust/
-    /bin/cp -afr cargo/bin /usr/local/rust/
-    /bin/cp -afr rust-analyzer-preview/bin /usr/local/rust/
-    /bin/cp -afr rustfmt-preview/bin /usr/local/rust/
-    /bin/cp -afr rustc/libexec /usr/local/rust/
-    /bin/cp -afr cargo/etc /usr/local/rust/
+    #bash install.sh --prefix=/usr/local/rust
+    bash install.sh --prefix=/usr/local
     sleep 1
     cd /tmp
     rm -fr "${_tmp_dir}"
+    #export RUST_HOME="/usr/local/rust"
+    export RUST_HOME="/usr/local"
+    export PATH=$RUST_HOME/bin:$PATH
+    export LD_LIBRARY_PATH=$RUST_HOME/lib:$LD_LIBRARY_PATH
+    export CARGO_HOME='.cargo'
+    echo
+    cargo --version
+    echo
 }
 
 _build_zlib() {
@@ -273,7 +269,8 @@ _build_redis() {
     rm -f redis*.tar*
     cd redis-*
     # rust
-    export RUST_HOME="/usr/local/rust"
+    #export RUST_HOME="/usr/local/rust"
+    export RUST_HOME="/usr/local"
     export PATH=$RUST_HOME/bin:$PATH
     export LD_LIBRARY_PATH=$RUST_HOME/lib:$LD_LIBRARY_PATH
     export CARGO_HOME='.cargo'
