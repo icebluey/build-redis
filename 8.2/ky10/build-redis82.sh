@@ -236,7 +236,7 @@ _build_redis() {
     set -e
     _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
-    _redis_ver="$(wget -qO- 'https://download.redis.io/releases/' | grep -ivE 'alpha|beta|rc' | grep -i 'redis-8\.0' | sed 's|"|\n|g' | grep -i '^redis-8\.0' | sed -e 's|.*redis-||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n1)"
+    _redis_ver="$(wget -qO- 'https://download.redis.io/releases/' | grep -ivE 'alpha|beta|rc' | grep -i 'redis-8\.2' | sed 's|"|\n|g' | grep -i '^redis-8\.2' | sed -e 's|.*redis-||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n1)"
     wget -c -t 9 -T 9 "https://download.redis.io/releases/redis-${_redis_ver}.tar.gz"
     tar -xof redis*.tar*
     sleep 1

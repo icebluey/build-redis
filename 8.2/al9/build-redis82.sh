@@ -59,6 +59,32 @@ _strip_files() {
     echo
 }
 
+_install_rust() {
+    set -e
+    _tmp_dir="$(mktemp -d)"
+    cd "${_tmp_dir}"
+    _rust_ver="$(wget -qO- 'https://forge.rust-lang.org/infra/other-installation-methods.html#standalone' | grep -i '\.tar\.xz' | sed 's/"/\n/g' | grep -i 'https://.*xz$' | grep -ivE 'beta|nightly|src' | grep -i 'x86_64-unknown-linux-gnu' | sort -V | uniq | tail -n 1 | sed -e 's|.*rust-||g' -e 's|-x86.*||g')"
+    wget -c -t 0 -T 9 "https://static.rust-lang.org/dist/rust-${_rust_ver}-x86_64-unknown-linux-gnu.tar.xz"
+    tar -xof *.tar*
+    sleep 1
+    rm -fr *.tar*
+    cd rust-*
+    rm -fr /usr/local/rust
+    #bash install.sh --prefix=/usr/local/rust
+    bash install.sh --prefix=/usr/local
+    sleep 1
+    cd /tmp
+    rm -fr "${_tmp_dir}"
+    #export RUST_HOME="/usr/local/rust"
+    export RUST_HOME="/usr/local"
+    export PATH=$RUST_HOME/bin:$PATH
+    export LD_LIBRARY_PATH=$RUST_HOME/lib:$LD_LIBRARY_PATH
+    export CARGO_HOME='.cargo'
+    echo
+    cargo --version
+    echo
+}
+
 _build_zlib() {
     /sbin/ldconfig
     set -e
@@ -236,12 +262,21 @@ _build_redis() {
     set -e
     _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
-    _redis_ver="$(wget -qO- 'https://download.redis.io/releases/' | grep -ivE 'alpha|beta|rc' | grep -i 'redis-8\.0' | sed 's|"|\n|g' | grep -i '^redis-8\.0' | sed -e 's|.*redis-||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n1)"
+    _redis_ver="$(wget -qO- 'https://download.redis.io/releases/' | grep -ivE 'alpha|beta|rc' | grep -i 'redis-8\.2' | sed 's|"|\n|g' | grep -i '^redis-8\.2' | sed -e 's|.*redis-||g' -e 's|\.tar.*||g' | sort -V | uniq | tail -n1)"
     wget -c -t 9 -T 9 "https://download.redis.io/releases/redis-${_redis_ver}.tar.gz"
     tar -xof redis*.tar*
     sleep 1
     rm -f redis*.tar*
     cd redis-*
+    # rust
+    #export RUST_HOME="/usr/local/rust"
+    export RUST_HOME="/usr/local"
+    export PATH=$RUST_HOME/bin:$PATH
+    export LD_LIBRARY_PATH=$RUST_HOME/lib:$LD_LIBRARY_PATH
+    export CARGO_HOME='.cargo'
+    echo
+    cargo --version
+    echo
     LDFLAGS=''
     LDFLAGS="${_ORIG_LDFLAGS}"; export LDFLAGS
     sed -i -e 's|^logfile .*$|logfile /var/log/redis/redis.log|g' redis.conf
@@ -255,7 +290,7 @@ _build_redis() {
     export BUILD_WITH_MODULES=yes
     export INSTALL_RUST_TOOLCHAIN=yes
     export DISABLE_WERRORS=yes
-    make PREFIX=/usr all
+    make -j$(nproc --all) PREFIX=/usr all
     mkdir -p /tmp/redis/usr/lib64/redis/modules
     mkdir -p /tmp/redis/usr/include
     mkdir -p /tmp/redis/etc/redis
@@ -268,18 +303,17 @@ _build_redis() {
     cd /tmp/redis
     find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs --no-run-if-empty -I '{}' strip '{}'
     find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, .*stripped.*/\1/p' | \
-      xargs --no-run-if-empty -I '{}' patchelf --add-rpath '$ORIGIN/../lib64/redis/private' '{}' || \
-      xargs --no-run-if-empty -I '{}' patchelf --set-rpath '$ORIGIN/../lib64/redis/private' '{}'
+      xargs --no-run-if-empty -I '{}' patchelf --add-rpath '$ORIGIN/../lib64/redis/private' '{}'
 
     #install -v -m 0755 -d /var/lib/redis
     #install -v -m 0755 -d /var/log/redis
     echo
     sleep 2
-    tar -Jcvf /tmp/redis-"${_redis_ver}"-1_ky10_amd64.tar.xz *
+    tar -Jcvf /tmp/redis-"${_redis_ver}"-1_$(cat /etc/os-release | grep -i PLATFORM_ID | sed 's|"||g' | awk -F: '{print $2}')_amd64.tar.xz *
     echo
     sleep 2
     cd /tmp
-    openssl dgst -r -sha256 redis-"${_redis_ver}"-1_ky10_amd64.tar.xz | sed 's|\*| |g' > redis-"${_redis_ver}"-1_ky10_amd64.tar.xz.sha256
+    openssl dgst -r -sha256 redis-"${_redis_ver}"-1_$(cat /etc/os-release | grep -i PLATFORM_ID | sed 's|"||g' | awk -F: '{print $2}')_amd64.tar.xz | sed 's|\*| |g' > redis-"${_redis_ver}"-1_$(cat /etc/os-release | grep -i PLATFORM_ID | sed 's|"||g' | awk -F: '{print $2}')_amd64.tar.xz.sha256
     rm -fr "${_tmp_dir}"
     rm -fr /tmp/redis
     /sbin/ldconfig
@@ -289,10 +323,23 @@ _build_redis() {
 
 rm -fr /usr/lib64/redis
 
+python3.12 -m venv /opt/venv
+sleep 1
+. /opt/venv/bin/activate
+sleep 1
+. /opt/rh/gcc-toolset-13/enable
+echo
+python -V
+echo
+gcc -v
+echo
+
 _build_zlib
 _build_brotli
 _build_zstd
 _build_openssl35
+
+_install_rust
 _build_redis
 
 rm -fr /tmp/_output
