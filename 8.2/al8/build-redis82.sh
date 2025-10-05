@@ -87,13 +87,12 @@ _install_rust() {
 
 _build_zlib() {
     /sbin/ldconfig
-    set -e
-    _tmp_dir="$(mktemp -d)"
+    set -euo pipefail
+    local _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
-    _zlib_ver="$(wget -qO- 'https://www.zlib.net/' | grep 'zlib-[1-9].*\.tar\.' | sed -e 's|"|\n|g' | grep '^zlib-[1-9]' | sed -e 's|\.tar.*||g' -e 's|zlib-||g' | sort -V | uniq | tail -n 1)"
+    _zlib_ver="$(wget -qO- 'https://www.zlib.net/' | grep -io 'href="[^"]*\.tar\.gz"' | sed 's/href="//I;s/"//' | grep -i '^zlib-[0-9]' | sed 's/zlib-\(.*\)\.tar\.gz/\1/' | sort -V | tail -n1)"
     wget -c -t 9 -T 9 "https://www.zlib.net/zlib-${_zlib_ver}.tar.gz"
-    tar -xof zlib-*.tar.*
-    sleep 1
+    tar -xof zlib-*.tar*
     rm -f zlib-*.tar*
     cd zlib-*
     ./configure --prefix=/usr --libdir=/usr/lib64 --includedir=/usr/include --64
@@ -103,12 +102,10 @@ _build_zlib() {
     cd /tmp/zlib
     _strip_files
     install -m 0755 -d "${_private_dir}"
-    cp -af usr/lib64/*.so* "${_private_dir}"/
+    /bin/cp -af usr/lib64/*.so* "${_private_dir}"/
     /bin/rm -f /usr/lib64/libz.so*
     /bin/rm -f /usr/lib64/libz.a
-    sleep 2
     /bin/cp -afr * /
-    sleep 2
     cd /tmp
     rm -fr "${_tmp_dir}"
     rm -fr /tmp/zlib
@@ -117,8 +114,8 @@ _build_zlib() {
 
 _build_brotli() {
     /sbin/ldconfig
-    set -e
-    _tmp_dir="$(mktemp -d)"
+    set -euo pipefail
+    local _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
     git clone --recursive 'https://github.com/google/brotli.git' brotli
     cd brotli
@@ -126,7 +123,7 @@ _build_brotli() {
     if [[ -f bootstrap ]]; then
         ./bootstrap
         rm -fr autom4te.cache
-        LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,-rpath,\$$ORIGIN'; export LDFLAGS
+        LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,--disable-new-dtags -Wl,-rpath,\$$ORIGIN'; export LDFLAGS
         ./configure \
         --build=x86_64-linux-gnu --host=x86_64-linux-gnu \
         --enable-shared --disable-static \
@@ -135,7 +132,7 @@ _build_brotli() {
         rm -fr /tmp/brotli
         make install DESTDIR=/tmp/brotli
     else
-        LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,-rpath,\$ORIGIN'; export LDFLAGS
+        LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,--disable-new-dtags -Wl,-rpath,\$ORIGIN'; export LDFLAGS
         cmake \
         -S "." \
         -B "build" \
@@ -156,10 +153,8 @@ _build_brotli() {
     cd /tmp/brotli
     _strip_files
     install -m 0755 -d "${_private_dir}"
-    cp -af usr/lib64/*.so* "${_private_dir}"/
-    sleep 2
+    /bin/cp -af usr/lib64/*.so* "${_private_dir}"/
     /bin/cp -afr * /
-    sleep 2
     cd /tmp
     rm -fr "${_tmp_dir}"
     rm -fr /tmp/brotli
@@ -168,8 +163,8 @@ _build_brotli() {
 
 _build_zstd() {
     /sbin/ldconfig
-    set -e
-    _tmp_dir="$(mktemp -d)"
+    set -euo pipefail
+    local _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
     git clone --recursive "https://github.com/facebook/zstd.git"
     cd zstd
@@ -183,26 +178,26 @@ _build_zstd() {
     sed '/^prefix/s|= .*|= /usr|g' -i lib/Makefile
     sed '/^libdir/s|= .*|= /usr/lib64|g' -i lib/Makefile
     sed '/^PREFIX/s|= .*|= /usr|g' -i programs/Makefile
-    #sed '/^LIBDIR/s|= .*|= /usr/lib64|g' -i programs/Makefile
     sed '/^prefix/s|= .*|= /usr|g' -i programs/Makefile
-    #sed '/^libdir/s|= .*|= /usr/lib64|g' -i programs/Makefile
-    LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,-rpath,\$$OOORIGIN'; export LDFLAGS
-    make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C lib lib-mt
+    #LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,--disable-new-dtags -Wl,-rpath,\$$OOORIGIN'; export LDFLAGS
     LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"; export LDFLAGS
-    make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C programs
-    make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C contrib/pzstd
+    make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C lib lib-mt
+    # build bin
+    #LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"; export LDFLAGS
+    #make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C programs
+    #make -j$(nproc --all) V=1 prefix=/usr libdir=/usr/lib64 -C contrib/pzstd
     rm -fr /tmp/zstd
-    make install DESTDIR=/tmp/zstd
-    install -v -c -m 0755 contrib/pzstd/pzstd /tmp/zstd/usr/bin/
+    make install DESTDIR=/tmp/zstd -C lib
+    #make install DESTDIR=/tmp/zstd
+    #install -v -c -m 0755 contrib/pzstd/pzstd /tmp/zstd/usr/bin/
     cd /tmp/zstd
-    ln -svf zstd.1 usr/share/man/man1/pzstd.1
+    #ln -svf zstd.1 usr/share/man/man1/pzstd.1
     _strip_files
-    find usr/lib64/ -type f -iname '*.so*' | xargs -I '{}' chrpath -r '$ORIGIN' '{}'
+    #find usr/lib64/ -type f -iname '*.so*' | xargs -I '{}' patchelf --force-rpath --set-rpath '$ORIGIN' '{}'
     install -m 0755 -d "${_private_dir}"
-    cp -af usr/lib64/*.so* "${_private_dir}"/
-    sleep 2
+    /bin/cp -af usr/lib64/*.so* "${_private_dir}"/
+    rm -f /usr/lib64/libzstd.*
     /bin/cp -afr * /
-    sleep 2
     cd /tmp
     rm -fr "${_tmp_dir}"
     rm -fr /tmp/zstd
@@ -210,17 +205,17 @@ _build_zstd() {
 }
 
 _build_openssl35() {
-    set -e
-    _tmp_dir="$(mktemp -d)"
+    /sbin/ldconfig
+    set -euo pipefail
+    local _tmp_dir="$(mktemp -d)"
     cd "${_tmp_dir}"
     _openssl35_ver="$(wget -qO- 'https://openssl-library.org/source/index.html' | grep 'openssl-3\.5\.' | sed 's|"|\n|g' | sed 's|/|\n|g' | grep -i '^openssl-3\.5\..*\.tar\.gz$' | cut -d- -f2 | sed 's|\.tar.*||g' | sort -V | uniq | tail -n 1)"
     wget -c -t 9 -T 9 https://github.com/openssl/openssl/releases/download/openssl-${_openssl35_ver}/openssl-${_openssl35_ver}.tar.gz
     tar -xof openssl-*.tar*
-    sleep 1
     rm -f openssl-*.tar*
     cd openssl-*
     sed '/install_docs:/s| install_html_docs||g' -i Configurations/unix-Makefile.tmpl
-    LDFLAGS=''; LDFLAGS='-Wl,-z,relro -Wl,--as-needed -Wl,-z,now -Wl,-rpath,\$$ORIGIN'; export LDFLAGS
+    LDFLAGS=''; LDFLAGS="${_ORIG_LDFLAGS}"' -Wl,--disable-new-dtags -Wl,-rpath,\$$ORIGIN'; export LDFLAGS
     HASHBANGPERL=/usr/bin/perl
     ./Configure \
     --prefix=/usr \
@@ -233,6 +228,7 @@ _build_openssl35() {
     enable-ec enable-ecdh enable-ecdsa \
     enable-ec_nistp_64_gcc_128 \
     enable-poly1305 enable-ktls enable-quic \
+    enable-ml-kem enable-ml-dsa enable-slh-dsa \
     enable-md2 enable-rc5 \
     no-mdc2 no-ec2m \
     no-sm2 no-sm2-precomp no-sm3 no-sm4 \
@@ -245,12 +241,10 @@ _build_openssl35() {
     sed 's|http://|https://|g' -i usr/lib64/pkgconfig/*.pc
     _strip_files
     install -m 0755 -d "${_private_dir}"
-    cp -af usr/lib64/*.so* "${_private_dir}"/
+    /bin/cp -af usr/lib64/*.so* "${_private_dir}"/
     rm -fr /usr/include/openssl
     rm -fr /usr/include/x86_64-linux-gnu/openssl
-    sleep 2
     /bin/cp -afr * /
-    sleep 2
     cd /tmp
     rm -fr "${_tmp_dir}"
     rm -fr /tmp/openssl35
@@ -290,7 +284,7 @@ _build_redis() {
     export BUILD_WITH_MODULES=yes
     export INSTALL_RUST_TOOLCHAIN=yes
     export DISABLE_WERRORS=yes
-    make -j$(nproc --all) PREFIX=/usr all
+    make IGNORE_MISSING_DEPS=1 -j$(nproc --all) PREFIX=/usr all
     mkdir -p /tmp/redis/usr/lib64/redis/modules
     mkdir -p /tmp/redis/usr/include
     mkdir -p /tmp/redis/etc/redis
@@ -302,9 +296,9 @@ _build_redis() {
     cp -afr /usr/lib64/redis/private /tmp/redis/usr/lib64/redis/
     cd /tmp/redis
     find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs --no-run-if-empty -I '{}' strip '{}'
-    find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, .*stripped.*/\1/p' | \
-      xargs --no-run-if-empty -I '{}' patchelf --set-rpath '$ORIGIN/../lib64/redis/private' '{}'
     find usr/lib64/redis/modules/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, not stripped.*/\1/p' | xargs --no-run-if-empty -I '{}' strip '{}'
+    find usr/bin/ -type f -exec file '{}' \; | sed -n -e 's/^\(.*\):[  ]*ELF.*, .*stripped.*/\1/p' | \
+      xargs --no-run-if-empty -I '{}' patchelf --force-rpath --set-rpath '$ORIGIN/../lib64/redis/private' '{}'
 
     #install -v -m 0755 -d /var/lib/redis
     #install -v -m 0755 -d /var/log/redis
