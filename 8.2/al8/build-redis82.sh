@@ -276,6 +276,7 @@ _build_redis() {
     export BUILD_WITH_MODULES=yes
     export INSTALL_RUST_TOOLCHAIN=yes
     export DISABLE_WERRORS=yes
+    export IGNORE_MISSING_DEPS=1
     make IGNORE_MISSING_DEPS=1 -j$(nproc --all) PREFIX=/usr all
     mkdir -p /tmp/redis/usr/lib64/redis/modules
     mkdir -p /tmp/redis/usr/include
